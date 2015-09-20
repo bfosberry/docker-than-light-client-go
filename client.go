@@ -11,6 +11,7 @@ import (
 type Client interface {
 	ScanSector() ([]Ship, []Sector, Ship, error)
 	Travel(Sector) (Ship, error)
+	Fire(string) (Ship, error)
 }
 
 type client struct {
@@ -24,6 +25,10 @@ type ScanSectorResponse struct {
 }
 
 type TravelResponse struct {
+	NewShip Ship
+}
+
+type FireResponse struct {
 	NewShip Ship
 }
 
@@ -47,6 +52,21 @@ func (c *client) Travel(sector Sector) (Ship, error) {
 	var errString string
 	r := TravelResponse{}
 	resp, err := s.Get(fmt.Sprintf("%s/travel/%s", c.ApiURL, sector.Name), nil, &r, &errString)
+
+	if err != nil {
+		return nil, err
+	}
+	if resp.Status() != 200 {
+		return nil, errors.New("Scan failed!")
+	}
+	return r.NewShip, nil
+}
+
+func (c *client) Fire(target string) (Ship, error) {
+	s := napping.Session{}
+	var errString string
+	r := FireResponse{}
+	resp, err := s.Get(fmt.Sprintf("%s/fire/%s", c.ApiURL, target), nil, &r, &errString)
 
 	if err != nil {
 		return nil, err

@@ -7,8 +7,10 @@ import (
 type Ship interface {
 	CanTravel() bool
 	CanFire() bool
+	CanScan() bool
 	ScanSector() ([]Ship, []Sector, error)
 	Travel(Sector) error
+	Fire(string) error
 	Update(Ship)
 	Hit(int, string, Ship)
 	Scanned(string)
@@ -18,7 +20,8 @@ type Ship interface {
 
 const (
 	TravelCost     = 10
-	FireCost       = 5
+	FireCost       = 15
+	ScanCost       = 5
 	startingHull   = 100
 	startingEnergy = 100
 )
@@ -69,6 +72,10 @@ func (s *ship) CanFire() bool {
 	return s.energy > FireCost
 }
 
+func (s *ship) CanScan() bool {
+	return s.energy > ScanCost
+}
+
 func (s *ship) ScanSector() ([]Ship, []Sector, error) {
 	ships, sectors, newShip, err := s.client.ScanSector()
 	if err != nil {
@@ -79,6 +86,15 @@ func (s *ship) ScanSector() ([]Ship, []Sector, error) {
 
 func (s *ship) Travel(sector Sector) error {
 	newShip, err := s.client.Travel(sector)
+	if err != nil {
+		return err
+	}
+	s.Update(newShip)
+	return nil
+}
+
+func (s *ship) Fire(target string) error {
+	newShip, err := s.client.Fire(target)
 	if err != nil {
 		return err
 	}
