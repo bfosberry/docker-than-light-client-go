@@ -5,5 +5,8 @@ func New() (Ship, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewShip(client), nil
+	s := NewShip(client)
+	server := NewServer(s)
+	server.Listen()
+	return s, nil
 }

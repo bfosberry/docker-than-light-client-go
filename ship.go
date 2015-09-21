@@ -1,6 +1,8 @@
 package dtl
 
 import (
+	"encoding/json"
+	"io"
 	"os"
 )
 
@@ -46,6 +48,16 @@ func NewShip(client Client) Ship {
 		name:   name,
 		client: client,
 	}
+}
+
+func NewShipFromJson(body io.ReadCloser) (Ship, error) {
+	decoder := json.NewDecoder(body)
+	s := &ship{}
+	err := decoder.Decode(s)
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
 }
 
 func (s *ship) SetHitFunc(hitFunc HitFunc) {
@@ -109,9 +121,13 @@ func (s *ship) Update(newShip Ship) {
 
 func (s *ship) Hit(damage int, attacker string, newShip Ship) {
 	s.Update(newShip)
-	s.hitFunc(damage, attacker)
+	if s.hitFunc != nil {
+		s.hitFunc(damage, attacker)
+	}
 }
 
 func (s *ship) Scanned(attacker string) {
-	s.scannedFunc(attacker)
+	if s.scannedFunc != nil {
+		s.scannedFunc(attacker)
+	}
 }
