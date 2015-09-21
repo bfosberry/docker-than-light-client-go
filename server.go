@@ -1,8 +1,10 @@
 package dtl
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 const (
@@ -14,15 +16,22 @@ type Server interface {
 }
 
 type server struct {
-	port int
-	ship *Ship
+	port  int
+	ship  *Ship
+	token string
 }
 
-func NewServer(ship *Ship) Server {
-	return &server{
-		port: DefaultPort,
-		ship: ship,
+func NewServer(ship *Ship) (Server, error) {
+	token := os.Getenv("TOKEN")
+	if token == "" {
+		return nil, errors.New("No Token provided")
 	}
+
+	return &server{
+		port:  DefaultPort,
+		ship:  ship,
+		token: token,
+	}, nil
 }
 
 func (s *server) Listen() {
@@ -37,6 +46,10 @@ func (s *server) ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) update(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Authorization") != s.token {
+		w.WriteHeader(401)
+		return
+	}
 	sh, err := NewShipFromJson(r.Body)
 	if err != nil {
 		w.WriteHeader(500)
@@ -47,6 +60,10 @@ func (s *server) update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) action(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Authorization") != s.token {
+		w.WriteHeader(401)
+		return
+	}
 	a, err := NewActionFromJson(r.Body)
 	if err != nil {
 		w.WriteHeader(500)
