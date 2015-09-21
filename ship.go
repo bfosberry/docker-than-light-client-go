@@ -10,7 +10,7 @@ const (
 	TravelCost     = 10
 	FireCost       = 15
 	ScanCost       = 5
-	startingHull   = 100
+	startingShield  = 100
 	startingEnergy = 100
 )
 
@@ -18,20 +18,20 @@ type HitFunc func(int, string)
 type ScannedFunc func(string)
 
 type Ship struct {
-	hull        int `json:"shield"`
-	energy      int `json:"energy"`
+	Shield        int `json:"shield"`
+	Energy      int `json:"energy"`
 	hitFunc     HitFunc
 	scannedFunc ScannedFunc
-	name        string
+	Name        string
 	client      Client
 }
 
 func NewShip(client Client) *Ship {
 	name := os.Getenv("SHIP_NAME")
 	return &Ship{
-		hull:   startingHull,
-		energy: startingEnergy,
-		name:   name,
+		Shield:   startingShield,
+		Energy: startingEnergy,
+		Name:   name,
 		client: client,
 	}
 }
@@ -54,24 +54,16 @@ func (s *Ship) SetScannedFunc(scannedFunc ScannedFunc) {
 	s.scannedFunc = scannedFunc
 }
 
-func (s *Ship) GetHull() int {
-	return s.hull
-}
-
-func (s *Ship) GetEnergy() int {
-	return s.energy
-}
-
 func (s *Ship) CanTravel() bool {
-	return s.energy > TravelCost
+	return s.Energy > TravelCost
 }
 
 func (s *Ship) CanFire() bool {
-	return s.energy > FireCost
+	return s.Energy > FireCost
 }
 
 func (s *Ship) CanScan() bool {
-	return s.energy > ScanCost
+	return s.Energy > ScanCost
 }
 
 func (s *Ship) ScanSector() ([]*Ship, []*Sector, error) {
@@ -102,8 +94,8 @@ func (s *Ship) Fire(target string) error {
 
 func (s *Ship) Update(newShip *Ship) {
 	if newShip != nil {
-		s.hull = newShip.GetHull()
-		s.energy = newShip.GetEnergy()
+		s.Shield = newShip.Shield
+		s.Energy = newShip.Energy
 	}
 }
 
