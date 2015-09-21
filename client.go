@@ -1,17 +1,17 @@
 package dtl
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
-
-	"github.com/jmcvetta/napping"
 )
 
 type Client interface {
-	ScanSector() ([]Ship, []Sector, Ship, error)
-	Travel(Sector) (Ship, error)
-	Fire(string) (Ship, error)
+	ScanSector() ([]*Ship, []*Sector, *Ship, error)
+	Travel(*Sector) (*Ship, error)
+	Fire(string) (*Ship, error)
 }
 
 type client struct {
@@ -19,62 +19,72 @@ type client struct {
 }
 
 type ScanSectorResponse struct {
-	Ships   []Ship
-	Sectors []Sector
-	NewShip Ship
+	Ships   []*Ship   `json:"ships"`
+	Sectors []*Sector `json:"sectors"`
+	State   *Ship     `json:"state"`
 }
 
 type TravelResponse struct {
-	NewShip Ship
+	State *Ship
 }
 
 type FireResponse struct {
-	NewShip Ship
+	State *Ship
 }
 
-func (c *client) ScanSector() ([]Ship, []Sector, Ship, error) {
-	s := napping.Session{}
-	var errString string
-	r := ScanSectorResponse{}
-	resp, err := s.Get(fmt.Sprintf("%s/scan", c.ApiURL), nil, &r, &errString)
-
+func (c *client) ScanSector() ([]*Ship, []*Sector, *Ship, error) {
+	var r ScanSectorResponse
+	resp, err := http.Get(fmt.Sprintf("%s/scan", c.ApiURL))
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	if resp.Status() != 200 {
+	if resp.StatusCode != 200 {
 		return nil, nil, nil, errors.New("Scan failed!")
 	}
-	return r.Ships, r.Sectors, r.NewShip, nil
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&r)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	return r.Ships, r.Sectors, r.State, nil
 }
 
-func (c *client) Travel(sector Sector) (Ship, error) {
-	s := napping.Session{}
-	var errString string
-	r := TravelResponse{}
-	resp, err := s.Get(fmt.Sprintf("%s/travel/%s", c.ApiURL, sector.Name), nil, &r, &errString)
+func (c *client) Travel(sector *Sector) (*Ship, error) {
+	var r TravelResponse
+	resp, err := http.Post(fmt.Sprintf("%s/travel/%s", c.ApiURL, sector.Name), "application/json", nil)
 
 	if err != nil {
 		return nil, err
 	}
-	if resp.Status() != 200 {
-		return nil, errors.New("Scan failed!")
+	if resp.StatusCode != 200 {
+		return nil, errors.New("Travel failed!")
 	}
-	return r.NewShip, nil
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&r)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.State, nil
 }
 
-func (c *client) Fire(target string) (Ship, error) {
-	s := napping.Session{}
-	var errString string
-	r := FireResponse{}
-	resp, err := s.Get(fmt.Sprintf("%s/fire/%s", c.ApiURL, target), nil, &r, &errString)
+func (c *client) Fire(target string) (*Ship, error) {
+	var r FireResponse
+	resp, err := http.Post(fmt.Sprintf("%s/fire/%s", c.ApiURL, target), "application/json", nil)
 
 	if err != nil {
 		return nil, err
 	}
-	if resp.Status() != 200 {
-		return nil, errors.New("Scan failed!")
+	if resp.StatusCode != 200 {
+		return nil, errors.New("Firing failed!")
 	}
-	return r.NewShip, nil
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&r)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.State, nil
 }
 
 func NewClient() (Client, error) {

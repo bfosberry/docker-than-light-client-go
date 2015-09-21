@@ -9,7 +9,7 @@ import (
 type Action struct {
 	Type    string
 	Payload map[string]interface{}
-	State   Ship
+	State   *Ship
 }
 
 type HitPayload struct {

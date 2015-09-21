@@ -1,5 +1,5 @@
 package dtl
 
 type Sector struct {
-	Name string
+	Name string `json:"name"`
 }

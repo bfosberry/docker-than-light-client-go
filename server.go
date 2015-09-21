@@ -15,10 +15,10 @@ type Server interface {
 
 type server struct {
 	port int
-	ship Ship
+	ship *Ship
 }
 
-func NewServer(ship Ship) Server {
+func NewServer(ship *Ship) Server {
 	return &server{
 		port: DefaultPort,
 		ship: ship,
