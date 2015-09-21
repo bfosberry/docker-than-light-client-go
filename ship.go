@@ -10,7 +10,7 @@ const (
 	TravelCost     = 10
 	FireCost       = 15
 	ScanCost       = 5
-	startingShield  = 100
+	startingShield = 100
 	startingEnergy = 100
 )
 
@@ -18,7 +18,7 @@ type HitFunc func(int, string)
 type ScannedFunc func(string)
 
 type Ship struct {
-	Shield        int `json:"shield"`
+	Shield      int `json:"shield"`
 	Energy      int `json:"energy"`
 	hitFunc     HitFunc
 	scannedFunc ScannedFunc
@@ -29,7 +29,7 @@ type Ship struct {
 func NewShip(client Client) *Ship {
 	name := os.Getenv("SHIP_NAME")
 	return &Ship{
-		Shield:   startingShield,
+		Shield: startingShield,
 		Energy: startingEnergy,
 		Name:   name,
 		client: client,
