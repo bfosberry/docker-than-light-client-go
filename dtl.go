@@ -11,6 +11,6 @@ func New() (*Ship, error) {
 	if err != nil {
 		return nil, err
 	}
-	server.Listen()
+	go server.Listen()
 	return s, nil
 }

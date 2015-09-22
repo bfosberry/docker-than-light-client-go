@@ -34,16 +34,17 @@ func NewActionFromJson(body io.ReadCloser) (*Action, error) {
 func (a *Action) HitPayload() (HitPayload, error) {
 	hp := HitPayload{}
 	d := a.Payload["damage"]
-	dInt, ok := d.(int)
+	dFloat, ok := d.(float64)
+
 	if !ok {
-		return hp, errors.New("failed to parse hit payload")
+		return hp, errors.New("failed to parse hit payload damage")
 	}
 	e := a.Payload["enemy"]
 	eStr, ok1 := e.(string)
 	if !ok1 {
-		return hp, errors.New("failed to parse hit payload")
+		return hp, errors.New("failed to parse hit payload enemy")
 	}
-	hp.Damage = dInt
+	hp.Damage = int(dFloat)
 	hp.Enemy = eStr
 
 	return hp, nil
