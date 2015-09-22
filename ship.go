@@ -7,11 +7,13 @@ import (
 )
 
 const (
-	TravelCost     = 10
-	FireCost       = 15
+	TravelCost     = 15
+	FireCost       = 12
 	ScanCost       = 5
 	startingShield = 100
 	startingEnergy = 100
+	rechargeRate   = 10
+	maxEnergy      = 100
 )
 
 type HitFunc func(int, string)
@@ -28,12 +30,14 @@ type Ship struct {
 
 func NewShip(client Client) *Ship {
 	name := os.Getenv("SHIP_NAME")
-	return &Ship{
+	s := &Ship{
 		Shield: startingShield,
 		Energy: startingEnergy,
 		Name:   name,
 		client: client,
 	}
+	go s.recharge()
+	return s
 }
 
 func NewShipFromJson(body io.ReadCloser) (*Ship, error) {
@@ -44,6 +48,16 @@ func NewShipFromJson(body io.ReadCloser) (*Ship, error) {
 		return nil, err
 	}
 	return s, nil
+}
+
+func (s *Ship) recharge() {
+	for {
+		sleep(1 * time.Seconds)
+		s.Energy = s.Energy + rechargeRate
+		if s.Energy > maxEnergy {
+			s.Energy = maxEnergy
+		}
+	}
 }
 
 func (s *Ship) SetHitFunc(hitFunc HitFunc) {
