@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"time"
 )
 
 const (
@@ -52,7 +53,7 @@ func NewShipFromJson(body io.ReadCloser) (*Ship, error) {
 
 func (s *Ship) recharge() {
 	for {
-		sleep(1 * time.Seconds)
+		time.Sleep(1 * time.Second)
 		s.Energy = s.Energy + rechargeRate
 		if s.Energy > maxEnergy {
 			s.Energy = maxEnergy
