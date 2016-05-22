@@ -57,6 +57,7 @@ func (s *server) update(w http.ResponseWriter, r *http.Request) {
 	}
 	sh, err := NewShipFromJson(r.Body)
 	if err != nil {
+                fmt.Printf("Failed to parse ship: %s\n", err.Error())
 		w.WriteHeader(500)
 		return
 	}
@@ -71,6 +72,7 @@ func (s *server) action(w http.ResponseWriter, r *http.Request) {
 	}
 	a, err := NewActionFromJson(r.Body)
 	if err != nil {
+                fmt.Printf("Failed to parse action: %s\n", err.Error())
 		w.WriteHeader(500)
 		return
 	}

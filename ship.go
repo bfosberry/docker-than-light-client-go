@@ -25,7 +25,7 @@ type Ship struct {
 	Energy      int `json:"energy"`
 	hitFunc     HitFunc
 	scannedFunc ScannedFunc
-	Name        string
+	Name        string `json:"name"`
 	client      Client
 }
 
